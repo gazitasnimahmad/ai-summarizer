@@ -1,6 +1,6 @@
 # 🧠 Text Summarizer API using Ollama (Mistral) + Spring Boot
 
-This project exposes a simple REST API built with **Spring Boot** that accepts a block of text and returns a **summary** using the **Mistral model from Ollama** running locally.
+This project exposes a simple REST API built with **Spring Boot** that accepts a block of text and returns a **summary** using the **Mistral model from Ollama** running locally. There is another endpoint also available which upload a file and get summary of that document
 
 ---
 
