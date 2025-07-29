@@ -2,7 +2,9 @@ package com.ai.summarizer.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tika.exception.TikaException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -12,18 +14,38 @@ import java.net.http.HttpResponse;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.tika.Tika;
+
 @Service
 public class LamaAiService {
     private static final String OLLAMA_URL = "http://localhost:11434/api/generate";
     private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final Tika tika = new Tika();
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public String summarize(String text) throws IOException, InterruptedException, URISyntaxException {
-        // Create JSON payload
+        String prompt = "Summarize the following \n\n" + text;
+        String response = callOllama( prompt);
+        return response;
+    }
+
+    public String extractAndSummarize(MultipartFile file) throws IOException, TikaException, URISyntaxException, InterruptedException {
+        // Step 1: Extract content using Apache Tika
+        String content = tika.parseToString(file.getInputStream());
+
+        // Step 3: Prompt for Ollama
+        String prompt = "Ignore the image , just Summarize the following document text :\n\n" + content;
+
+        // Step 4: Call local Ollama API
+        return callOllama(prompt);
+    }
+
+    private String callOllama(String prompt) throws IOException, InterruptedException, URISyntaxException {
         String payload = objectMapper.writeValueAsString(
                 objectMapper.createObjectNode()
                         .put("model", "mistral")
-                        .put("prompt", "Summarize this:\n" + text)
+                        .put("prompt", prompt)
                         .put("stream", false)
         );
 
